@@ -1,0 +1,10 @@
+FileVersion = 1
+
+[Project]
+Name = "quickjs-beef"
+TargetType = "BeefLib"
+StartupObject = "quickjs_beef.Program"
+
+[Configs.Debug.Win64]
+CLibType = "DynamicDebug"
+LibPaths = ["$(ProjectDir)\\libs\\qjs.lib"]

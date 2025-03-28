@@ -32,6 +32,7 @@ namespace quickjs_Beef;
 
 public static class quickjs
 {
+	typealias FILE = void*;
 	typealias char = char8;
 	typealias size_t = uint;
 
@@ -59,7 +60,7 @@ public static class quickjs
 	 */
 
 	[AllowDuplicates]
-	public enum js_tag
+	public enum js_tag : c_int
 	{
 		/* all tags with a reference count are negative */
 		JS_TAG_FIRST       = -9, /* first negative tag */
@@ -79,7 +80,7 @@ public static class quickjs
 		JS_TAG_EXCEPTION   = 6,
 		JS_TAG_FLOAT64     = 7,
 		/* any larger tag is FLOAT64 if JS_NAN_BOXING */
-	};
+	}
 
 	// #define JSValueConst JSValue /* For backwards compatibility. */
 
@@ -87,9 +88,9 @@ public static class quickjs
 
 	//typealias JSValue = uint64_t;
 
-	// #define JS_VALUE_GET_TAG(v) (int)((v) >> 32)
-	// #define JS_VALUE_GET_INT(v) (int)(v)
-	// #define JS_VALUE_GET_BOOL(v) (int)(v)
+	// #define JS_VALUE_GET_TAG(v) (c_int)((v) >> 32)
+	// #define JS_VALUE_GET_INT(v) (c_int)(v)
+	// #define JS_VALUE_GET_BOOL(v) (c_int)(v)
 	// #define JS_VALUE_GET_PTR(v) (void* )(intptr_t)(v)
 
 	// #define JS_MKVAL(tag, val) (((uint64_t)(tag) << 32) | (uint32_t)(val))
@@ -102,7 +103,7 @@ public static class quickjs
 		public int32_t int32;
 		public double float64;
 		public void* ptr;
-	};
+	}
 
 	[CRepr] public struct JSValue
 	{
@@ -110,11 +111,13 @@ public static class quickjs
 		public int64_t tag;
 	}
 
-	/*#define JS_VALUE_IS_BOTH_INT(v1, v2) ((JS_VALUE_GET_TAG(v1) | JS_VALUE_GET_TAG(v2)) == 0)
+	/*
+
+	#define JS_VALUE_IS_BOTH_INT(v1, v2) ((JS_VALUE_GET_TAG(v1) | JS_VALUE_GET_TAG(v2)) == 0)
 	#define JS_VALUE_IS_BOTH_FLOAT(v1, v2) (JS_TAG_IS_FLOAT64(JS_VALUE_GET_TAG(v1)) && JS_TAG_IS_FLOAT64(JS_VALUE_GET_TAG(v2)))
 
 	#define JS_VALUE_GET_OBJ(v) ((JSObject* )JS_VALUE_GET_PTR(v))
-	#define JS_VALUE_HAS_REF_COUNT(v) ((unsigned)JS_VALUE_GET_TAG(v) >= (unsigned)JS_TAG_FIRST)
+	#define JS_VALUE_HAS_REF_COUNT(v) ((unsigned)JS_VALUE_GET_TAG(v) >= unsigned)JS_TAG_FIRST)
 
 	/* special values */
 	#define JS_NULL      JS_MKVAL(JS_TAG_NULL, 0)
@@ -122,67 +125,73 @@ public static class quickjs
 	#define JS_FALSE     JS_MKVAL(JS_TAG_BOOL, 0)
 	#define JS_TRUE      JS_MKVAL(JS_TAG_BOOL, 1)
 	#define JS_EXCEPTION JS_MKVAL(JS_TAG_EXCEPTION, 0)
-	#define JS_UNINITIALIZED JS_MKVAL(JS_TAG_UNINITIALIZED, 0)*/
+	#define JS_UNINITIALIZED JS_MKVAL(JS_TAG_UNINITIALIZED, 0)
+
+	*/
 
 	/* flags for object properties */
-	const int JS_PROP_CONFIGURABLE  = (1 << 0);
-	const int JS_PROP_WRITABLE      = (1 << 1);
-	const int JS_PROP_ENUMERABLE    = (1 << 2);
-	const int JS_PROP_C_W_E         = (JS_PROP_CONFIGURABLE | JS_PROP_WRITABLE | JS_PROP_ENUMERABLE);
-	const int JS_PROP_LENGTH        = (1 << 3); /* used internally in Arrays */
-	const int JS_PROP_TMASK         = (3 << 4); /* mask for NORMAL, GETSET, VARREF, AUTOINIT */
-	const int JS_PROP_NORMAL         = (0 << 4);
-	const int JS_PROP_GETSET         = (1 << 4);
-	const int JS_PROP_VARREF         = (2 << 4); /* used internally */
-	const int JS_PROP_AUTOINIT       = (3 << 4); /* used internally */
+	const c_int JS_PROP_CONFIGURABLE  = 1 << 0;
+	const c_int JS_PROP_WRITABLE      = 1 << 1;
+	const c_int JS_PROP_ENUMERABLE    = 1 << 2;
+	const c_int JS_PROP_C_W_E         = JS_PROP_CONFIGURABLE | JS_PROP_WRITABLE | JS_PROP_ENUMERABLE;
+	const c_int JS_PROP_LENGTH        = 1 << 3; /* used internally in Arrays */
+	const c_int JS_PROP_TMASK         = 3 << 4; /* mask for NORMAL, GETSET, VARREF, AUTOINIT */
+	const c_int JS_PROP_NORMAL         = 0 << 4;
+	const c_int JS_PROP_GETSET         = 1 << 4;
+	const c_int JS_PROP_VARREF         = 2 << 4; /* used internally */
+	const c_int JS_PROP_AUTOINIT       = 3 << 4; /* used internally */
 
 	/* flags for JS_DefineProperty */
-	const int JS_PROP_HAS_SHIFT       =  8;
-	const int JS_PROP_HAS_CONFIGURABLE = (1 << 8);
-	const int JS_PROP_HAS_WRITABLE     = (1 << 9);
-	const int JS_PROP_HAS_ENUMERABLE   = (1 << 10);
-	const int JS_PROP_HAS_GET          = (1 << 11);
-	const int JS_PROP_HAS_SET          = (1 << 12);
-	const int JS_PROP_HAS_VALUE        = (1 << 13);
+	const c_int JS_PROP_HAS_SHIFT       =  8;
+	const c_int JS_PROP_HAS_CONFIGURABLE = 1 << 8;
+	const c_int JS_PROP_HAS_WRITABLE     = 1 << 9;
+	const c_int JS_PROP_HAS_ENUMERABLE   = 1 << 10;
+	const c_int JS_PROP_HAS_GET          = 1 << 11;
+	const c_int JS_PROP_HAS_SET          = 1 << 12;
+	const c_int JS_PROP_HAS_VALUE        = 1 << 13;
 
 	/* throw an exception if false would be returned
 	(JS_DefineProperty/JS_SetProperty) */
-	const int JS_PROP_THROW            = (1 << 14);
+	const c_int JS_PROP_THROW            = 1 << 14;
+
 	/* throw an exception if false would be returned in strict mode
 	(JS_SetProperty) */
-	const int JS_PROP_THROW_STRICT     = (1 << 15);
+	const c_int JS_PROP_THROW_STRICT     = 1 << 15;
 
-	const int JS_PROP_NO_ADD           = (1 << 16); /* internal use */
-	const int JS_PROP_NO_EXOTIC        = (1 << 17); /* internal use */
-	const int JS_PROP_DEFINE_PROPERTY  = (1 << 18); /* internal use */
-	const int JS_PROP_REFLECT_DEFINE_PROPERTY = (1 << 19); /* internal use */
+	const c_int JS_PROP_NO_ADD           = 1 << 16; /* internal use */
+	const c_int JS_PROP_NO_EXOTIC        = 1 << 17; /* internal use */
+	const c_int JS_PROP_DEFINE_PROPERTY  = 1 << 18; /* internal use */
+	const c_int JS_PROP_REFLECT_DEFINE_PROPERTY = 1 << 19; /* internal use */
 
 #if !JS_DEFAULT_STACK_SIZE
-	const int JS_DEFAULT_STACK_SIZE = (1024 *  1024);
+	const c_int JS_DEFAULT_STACK_SIZE = 1024 *  1024;
 #endif
 
 	/* JS_Eval() flags */
-	const int JS_EVAL_TYPE_GLOBAL   = (0 << 0); /* global code (default) */;
-	const int JS_EVAL_TYPE_MODULE   = (1 << 0); /* module code */;
-	const int JS_EVAL_TYPE_DIRECT   = (2 << 0); /* direct call (internal use) */;
-	const int JS_EVAL_TYPE_INDIRECT = (3 << 0); /* indirect call (internal use) */;
-	const int JS_EVAL_TYPE_MASK     = (3 << 0);
+	const c_int JS_EVAL_TYPE_GLOBAL   = 0 << 0; /* global code (default) */;
+	const c_int JS_EVAL_TYPE_MODULE   = 1 << 0; /* module code */;
+	const c_int JS_EVAL_TYPE_DIRECT   = 2 << 0; /* direct call (internal use) */;
+	const c_int JS_EVAL_TYPE_INDIRECT = 3 << 0; /* indirect call (internal use) */;
+	const c_int JS_EVAL_TYPE_MASK     = 3 << 0;
 
-	const int JS_EVAL_FLAG_STRICT   = (1 << 3); /* force 'strict' mode */;
-	const int JS_EVAL_FLAG_UNUSED   = (1 << 4); /* unused */;
+	const c_int JS_EVAL_FLAG_STRICT   = 1 << 3; /* force 'strict' mode */;
+	const c_int JS_EVAL_FLAG_UNUSED   = 1 << 4; /* unused */;
+
 	/* compile but do not run. The result is an object with a
 	JS_TAG_FUNCTION_BYTECODE or JS_TAG_MODULE tag. It can be executed
 	with JS_EvalFunction(). */
-	const int JS_EVAL_FLAG_COMPILE_ONLY = (1 << 5);
+	const c_int JS_EVAL_FLAG_COMPILE_ONLY = 1 << 5;
+
 	/* don't include the stack frames before this eval in the Error() backtraces */
-	const int JS_EVAL_FLAG_BACKTRACE_BARRIER = (1 << 6);
+	const c_int JS_EVAL_FLAG_BACKTRACE_BARRIER = 1 << 6;
+
 	/* allow top-level await in normal script. JS_Eval() returns a
 	promise. Only allowed with JS_EVAL_TYPE_GLOBAL */
-	const int JS_EVAL_FLAG_ASYNC = (1 << 7);
+	const c_int JS_EVAL_FLAG_ASYNC = 1 << 7;
 
-	public function JSValue JSCFunction(JSContext* ctx, JSValue this_val, int argc, JSValue* argv);
-	public function JSValue JSCFunctionMagic(JSContext* ctx, JSValue this_val, int argc, JSValue* argv, int magic);
-	public function JSValue JSCFunctionData(JSContext* ctx, JSValue this_val, int argc, JSValue* argv, int magic, JSValue* func_data);
+	public function JSValue JSCFunction(JSContext* ctx, JSValue this_val, c_int argc, JSValue* argv);
+	public function JSValue JSCFunctionMagic(JSContext* ctx, JSValue this_val, c_int argc, JSValue* argv, c_int magic);
+	public function JSValue JSCFunctionData(JSContext* ctx, JSValue this_val, c_int argc, JSValue* argv, c_int magic, JSValue* func_data);
 
 	struct JSMallocFunctions
 	{
@@ -196,25 +205,25 @@ public static class quickjs
 	// Debug trace system: the debug output will be produced to the dump stream (currently
 	// stdout) if dumps are enabled and JS_SetDumpFlags is invoked with the corresponding
 	// bit set.
-	const int JS_DUMP_BYTECODE_FINAL   = 0x01; /* dump pass 3 final byte code */
-	const int JS_DUMP_BYTECODE_PASS2   = 0x02; /* dump pass 2 code */
-	const int JS_DUMP_BYTECODE_PASS1   = 0x04; /* dump pass 1 code */
-	const int JS_DUMP_BYTECODE_HEX     = 0x10; /* dump bytecode in hex */
-	const int JS_DUMP_BYTECODE_PC2LINE = 0x20; /* dump line number table */
-	const int JS_DUMP_BYTECODE_STACK   = 0x40; /* dump compute_stack_size */
-	const int JS_DUMP_BYTECODE_STEP    = 0x80; /* dump executed bytecode */
-	const int JS_DUMP_READ_OBJECT     = 0x100; /* dump the marshalled objects at load time */
-	const int JS_DUMP_FREE            = 0x200; /* dump every object free */
-	const int JS_DUMP_GC              = 0x400; /* dump the occurrence of the automatic GC */
-	const int JS_DUMP_GC_FREE         = 0x800; /* dump objects freed by the GC */
-	const int JS_DUMP_MODULE_RESOLVE = 0x1000; /* dump module resolution steps */
-	const int JS_DUMP_PROMISE        = 0x2000; /* dump promise steps */
-	const int JS_DUMP_LEAKS          = 0x4000; /* dump leaked objects and strings in JS_FreeRuntime */
-	const int JS_DUMP_ATOM_LEAKS     = 0x8000; /* dump leaked atoms in JS_FreeRuntime */
-	const int JS_DUMP_MEM           = 0x10000; /* dump memory usage in JS_FreeRuntime */
-	const int JS_DUMP_OBJECTS       = 0x20000; /* dump objects in JS_FreeRuntime */
-	const int JS_DUMP_ATOMS         = 0x40000; /* dump atoms in JS_FreeRuntime */
-	const int JS_DUMP_SHAPES        = 0x80000; /* dump shapes in JS_FreeRuntime */
+	const c_int JS_DUMP_BYTECODE_FINAL   = 0x01; /* dump pass 3 final byte code */
+	const c_int JS_DUMP_BYTECODE_PASS2   = 0x02; /* dump pass 2 code */
+	const c_int JS_DUMP_BYTECODE_PASS1   = 0x04; /* dump pass 1 code */
+	const c_int JS_DUMP_BYTECODE_HEX     = 0x10; /* dump bytecode in hex */
+	const c_int JS_DUMP_BYTECODE_PC2LINE = 0x20; /* dump line number table */
+	const c_int JS_DUMP_BYTECODE_STACK   = 0x40; /* dump compute_stack_size */
+	const c_int JS_DUMP_BYTECODE_STEP    = 0x80; /* dump executed bytecode */
+	const c_int JS_DUMP_READ_OBJECT     = 0x100; /* dump the marshalled objects at load time */
+	const c_int JS_DUMP_FREE            = 0x200; /* dump every object free */
+	const c_int JS_DUMP_GC              = 0x400; /* dump the occurrence of the automatic GC */
+	const c_int JS_DUMP_GC_FREE         = 0x800; /* dump objects freed by the GC */
+	const c_int JS_DUMP_MODULE_RESOLVE = 0x1000; /* dump module resolution steps */
+	const c_int JS_DUMP_PROMISE        = 0x2000; /* dump promise steps */
+	const c_int JS_DUMP_LEAKS          = 0x4000; /* dump leaked objects and strings in JS_FreeRuntime */
+	const c_int JS_DUMP_ATOM_LEAKS     = 0x8000; /* dump leaked atoms in JS_FreeRuntime */
+	const c_int JS_DUMP_MEM           = 0x10000; /* dump memory usage in JS_FreeRuntime */
+	const c_int JS_DUMP_OBJECTS       = 0x20000; /* dump objects in JS_FreeRuntime */
+	const c_int JS_DUMP_ATOMS         = 0x40000; /* dump atoms in JS_FreeRuntime */
+	const c_int JS_DUMP_SHAPES        = 0x80000; /* dump shapes in JS_FreeRuntime */
 
 	// Finalizers run in LIFO order at the very end of JS_FreeRuntime.
 	// Intended for cleanup of associated resources; the runtime itself
@@ -241,7 +250,7 @@ public static class quickjs
 	[CLink] public static extern void JS_FreeRuntime(JSRuntime* rt);
 	[CLink] public static extern void* JS_GetRuntimeOpaque(JSRuntime* rt);
 	[CLink] public static extern void JS_SetRuntimeOpaque(JSRuntime* rt, void* opaque);
-	[CLink] public static extern int JS_AddRuntimeFinalizer(JSRuntime* rt, JSRuntimeFinalizer* finalizer, void* arg);
+	[CLink] public static extern c_int JS_AddRuntimeFinalizer(JSRuntime* rt, JSRuntimeFinalizer* finalizer, void* arg);
 
 	public function void JS_MarkFunc(JSRuntime* rt, JSGCObjectHeader* gp);
 
@@ -277,14 +286,14 @@ public static class quickjs
 	[CLink] public static extern void JS_AddPerformance(JSContext* ctx);
 
 	/* for equality comparisons and sameness */
-	[CLink] public static extern int JS_IsEqual(JSContext* ctx, JSValue op1, JSValue op2);
+	[CLink] public static extern c_int JS_IsEqual(JSContext* ctx, JSValue op1, JSValue op2);
 	[CLink] public static extern bool JS_IsStrictEqual(JSContext* ctx, JSValue op1, JSValue op2);
 	[CLink] public static extern bool JS_IsSameValue(JSContext* ctx, JSValue op1, JSValue op2);
 	/* Similar to same-value equality, but +0 and -0 are considered equal. */
 	[CLink] public static extern bool JS_IsSameValueZero(JSContext* ctx, JSValue op1, JSValue op2);
 
 	/* Only used for running 262 tests. TODO(saghul) add build time flag. */
-	[CLink] public static extern JSValue js_string_codePointRange(JSContext* ctx, JSValue this_val, int argc, JSValue* argv);
+	[CLink] public static extern JSValue js_string_codePointRange(JSContext* ctx, JSValue this_val, c_int argc, JSValue* argv);
 
 	[CLink] public static extern void* js_calloc_rt(JSRuntime* rt, size_t count, size_t size);
 	[CLink] public static extern void* js_malloc_rt(JSRuntime* rt, size_t size);
@@ -320,13 +329,11 @@ public static class quickjs
 		int64_t binary_object_count, binary_object_size;
 	}
 
-	struct FILE;
-
 	[CLink] public static extern void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s);
 	[CLink] public static extern void JS_DumpMemoryUsage(FILE* fp, JSMemoryUsage* s, JSRuntime* rt);
 
 	/* atom support */
-	const int JS_ATOM_NULL = 0;
+	const c_int JS_ATOM_NULL = 0;
 
 	[CLink] public static extern JSAtom JS_NewAtomLen(JSContext* ctx, char* str, size_t len);
 	[CLink] public static extern JSAtom JS_NewAtom(JSContext* ctx, char* str);
@@ -349,7 +356,7 @@ public static class quickjs
 
 	struct JSPropertyDescriptor
 	{
-		int flags;
+		c_int flags;
 		JSValue value;
 		JSValue getter;
 		JSValue setter;
@@ -358,25 +365,25 @@ public static class quickjs
 	struct JSClassExoticMethods
 	{
 		/* Return -1 if exception (can only happen in case of Proxy object), false if the property does not exists, true if it exists. If 1 is returned, the property descriptor 'desc' is filled if != NULL. */
-		function int(JSContext* ctx, JSPropertyDescriptor* desc, JSValue obj, JSAtom prop) get_own_property;
+		function c_int(JSContext* ctx, JSPropertyDescriptor* desc, JSValue obj, JSAtom prop) get_own_property;
 		/* '*ptab' should hold the '*plen' property keys. Return 0 if OK, -1 if exception. The 'is_enumerable' field is ignored. */
-		function int(JSContext* ctx, JSPropertyEnum** ptab, uint32_t* plen, JSValue obj) get_own_property_names;
+		function c_int(JSContext* ctx, JSPropertyEnum** ptab, uint32_t* plen, JSValue obj) get_own_property_names;
 		/* return < 0 if exception, or true/false */
-		function int(JSContext* ctx, JSValue obj, JSAtom prop) delete_property;
+		function c_int(JSContext* ctx, JSValue obj, JSAtom prop) delete_property;
 		/* return < 0 if exception or true/false */
-		function int(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val, JSValue getter, JSValue setter, int flags) define_own_property;
+		function c_int(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val, JSValue getter, JSValue setter, c_int flags) define_own_property;
 		/* The following methods can be emulated with the previous ones, so they are usually not needed */
 		/* return < 0 if exception or true/false */
-		function int(JSContext* ctx, JSValue obj, JSAtom atom) has_property;
+		function c_int(JSContext* ctx, JSValue obj, JSAtom atom) has_property;
 		function JSValue(JSContext* ctx, JSValue obj, JSAtom atom, JSValue receiver) get_property;
 		/* return < 0 if exception or true/false */
-		function int(JSContext* ctx, JSValue obj, JSAtom atom, JSValue value, JSValue receiver, int flags) set_property;
+		function c_int(JSContext* ctx, JSValue obj, JSAtom atom, JSValue value, JSValue receiver, c_int flags) set_property;
 	}
 
 	function void JSClassFinalizer(JSRuntime* rt, JSValue val);
 	function void JSClassGCMark(JSRuntime* rt, JSValue val, JS_MarkFunc* mark_func);
-	const int JS_CALL_FLAG_CONSTRUCTOR = (1 << 0);
-	function JSValue JSClassCall(JSContext* ctx, JSValue func_obj, JSValue this_val, int argc, JSValue* argv, int flags);
+	const c_int JS_CALL_FLAG_CONSTRUCTOR = 1 << 0;
+	function JSValue JSClassCall(JSContext* ctx, JSValue func_obj, JSValue this_val, c_int argc, JSValue* argv, c_int flags);
 
 	struct JSClassDef
 	{
@@ -394,23 +401,23 @@ public static class quickjs
 		JSClassExoticMethods* exotic;
 	}
 
-	const int JS_EVAL_OPTIONS_VERSION = 1;
+	const c_int JS_EVAL_OPTIONS_VERSION = 1;
 
 	struct JSEvalOptions
 	{
-		int version;
-		int eval_flags;
+		c_int version;
+		c_int eval_flags;
 		char* filename;
-		int line_num;
+		c_int line_num;
 		// can add new fields in ABI-compatible manner by incrementing JS_EVAL_OPTIONS_VERSION
 	}
 
-	const int JS_INVALID_CLASS_ID = 0;
+	const c_int JS_INVALID_CLASS_ID = 0;
 
 	[CLink] public static extern JSClassID JS_NewClassID(JSRuntime* rt, JSClassID* pclass_id);
 	/* Returns the class ID if `v` is an object, otherwise returns JS_INVALID_CLASS_ID. */
 	[CLink] public static extern JSClassID JS_GetClassID(JSValue v);
-	[CLink] public static extern int JS_NewClass(JSRuntime* rt, JSClassID class_id, JSClassDef* class_def);
+	[CLink] public static extern c_int JS_NewClass(JSRuntime* rt, JSClassID class_id, JSClassDef* class_def);
 	[CLink] public static extern bool JS_IsRegisteredClass(JSRuntime* rt, JSClassID class_id);
 
 	[CLink] public static extern JSValue JS_NewNumber(JSContext* ctx, double d);
@@ -441,19 +448,19 @@ public static class quickjs
 	[CLink] public static extern void JS_FreeValueRT(JSRuntime* rt, JSValue v);
 	[CLink] public static extern JSValue JS_DupValue(JSContext* ctx, JSValue v);
 	[CLink] public static extern JSValue JS_DupValueRT(JSRuntime* rt, JSValue v);
-	[CLink] public static extern int JS_ToBool(JSContext* ctx, JSValue val); /* return -1 for JS_EXCEPTION */
+	[CLink] public static extern c_int JS_ToBool(JSContext* ctx, JSValue val); /* return -1 for JS_EXCEPTION */
 
 	[CLink] public static extern JSValue JS_ToNumber(JSContext* ctx, JSValue val);
-	[CLink] public static extern int JS_ToInt32(JSContext* ctx, int32_t* pres, JSValue val);
+	[CLink] public static extern c_int JS_ToInt32(JSContext* ctx, int32_t* pres, JSValue val);
 
-	[CLink] public static extern int JS_ToInt64(JSContext* ctx, int64_t* pres, JSValue val);
-	[CLink] public static extern int JS_ToIndex(JSContext* ctx, uint64_t* plen, JSValue val);
-	[CLink] public static extern int JS_ToFloat64(JSContext* ctx, double* pres, JSValue val);
+	[CLink] public static extern c_int JS_ToInt64(JSContext* ctx, int64_t* pres, JSValue val);
+	[CLink] public static extern c_int JS_ToIndex(JSContext* ctx, uint64_t* plen, JSValue val);
+	[CLink] public static extern c_int JS_ToFloat64(JSContext* ctx, double* pres, JSValue val);
 	/* return an exception if 'val' is a Number */
-	[CLink] public static extern int JS_ToBigInt64(JSContext* ctx, int64_t* pres, JSValue val);
-	[CLink] public static extern int JS_ToBigUint64(JSContext* ctx, uint64_t* pres, JSValue val);
+	[CLink] public static extern c_int JS_ToBigInt64(JSContext* ctx, int64_t* pres, JSValue val);
+	[CLink] public static extern c_int JS_ToBigUint64(JSContext* ctx, uint64_t* pres, JSValue val);
 	/* same as JS_ToInt64() but allow BigInt */
-	[CLink] public static extern int JS_ToInt64Ext(JSContext* ctx, int64_t* pres, JSValue val);
+	[CLink] public static extern c_int JS_ToInt64Ext(JSContext* ctx, int64_t* pres, JSValue val);
 
 	[CLink] public static extern JSValue JS_NewStringLen(JSContext* ctx, char* str1, size_t len1);
 
@@ -469,11 +476,11 @@ public static class quickjs
 	[CLink] public static extern void JS_FreeCString(JSContext* ctx, char* ptr);
 
 	[CLink] public static extern JSValue JS_NewObjectProtoClass(JSContext* ctx, JSValue proto, JSClassID class_id);
-	[CLink] public static extern JSValue JS_NewObjectClass(JSContext* ctx, int class_id);
+	[CLink] public static extern JSValue JS_NewObjectClass(JSContext* ctx, c_int class_id);
 	[CLink] public static extern JSValue JS_NewObjectProto(JSContext* ctx, JSValue proto);
 	[CLink] public static extern JSValue JS_NewObject(JSContext* ctx);
-	[CLink] public static extern JSValue JS_NewObjectFrom(JSContext* ctx, int count, JSAtom* props, JSValue* values);
-	[CLink] public static extern JSValue JS_NewObjectFromStr(JSContext* ctx, int count, char** props, JSValue* values);
+	[CLink] public static extern JSValue JS_NewObjectFrom(JSContext* ctx, c_int count, JSAtom* props, JSValue* values);
+	[CLink] public static extern JSValue JS_NewObjectFromStr(JSContext* ctx, c_int count, char** props, JSValue* values);
 	[CLink] public static extern JSValue JS_ToObject(JSContext* ctx, JSValue val);
 	[CLink] public static extern JSValue JS_ToObjectString(JSContext* ctx, JSValue val);
 
@@ -486,8 +493,8 @@ public static class quickjs
 
 	[CLink] public static extern JSValue JS_NewArray(JSContext* ctx);
 	// takes ownership of the values
-	[CLink] public static extern JSValue JS_NewArrayFrom(JSContext* ctx, int count, JSValue* values);
-	[CLink] public static extern int JS_IsArray(JSContext* ctx, JSValue val);
+	[CLink] public static extern JSValue JS_NewArrayFrom(JSContext* ctx, c_int count, JSValue* values);
+	[CLink] public static extern c_int JS_IsArray(JSContext* ctx, JSValue val);
 
 	[CLink] public static extern JSValue JS_NewDate(JSContext* ctx, double epoch_ms);
 	[CLink] public static extern bool JS_IsDate(JSValue v);
@@ -497,37 +504,37 @@ public static class quickjs
 	[CLink] public static extern JSValue JS_GetPropertyInt64(JSContext* ctx, JSValue this_obj, int64_t idx);
 	[CLink] public static extern JSValue JS_GetPropertyStr(JSContext* ctx, JSValue this_obj, char* prop);
 
-	[CLink] public static extern int JS_SetProperty(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val);
-	[CLink] public static extern int JS_SetPropertyUint32(JSContext* ctx, JSValue this_obj, uint32_t idx, JSValue val);
-	[CLink] public static extern int JS_SetPropertyInt64(JSContext* ctx, JSValue this_obj, int64_t idx, JSValue val);
-	[CLink] public static extern int JS_SetPropertyStr(JSContext* ctx, JSValue this_obj, char* prop, JSValue val);
-	[CLink] public static extern int JS_HasProperty(JSContext* ctx, JSValue this_obj, JSAtom prop);
-	[CLink] public static extern int JS_IsExtensible(JSContext* ctx, JSValue obj);
-	[CLink] public static extern int JS_PreventExtensions(JSContext* ctx, JSValue obj);
-	[CLink] public static extern int JS_DeleteProperty(JSContext* ctx, JSValue obj, JSAtom prop, int flags);
-	[CLink] public static extern int JS_SetPrototype(JSContext* ctx, JSValue obj, JSValue proto_val);
+	[CLink] public static extern c_int JS_SetProperty(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val);
+	[CLink] public static extern c_int JS_SetPropertyUint32(JSContext* ctx, JSValue this_obj, uint32_t idx, JSValue val);
+	[CLink] public static extern c_int JS_SetPropertyInt64(JSContext* ctx, JSValue this_obj, int64_t idx, JSValue val);
+	[CLink] public static extern c_int JS_SetPropertyStr(JSContext* ctx, JSValue this_obj, char* prop, JSValue val);
+	[CLink] public static extern c_int JS_HasProperty(JSContext* ctx, JSValue this_obj, JSAtom prop);
+	[CLink] public static extern c_int JS_IsExtensible(JSContext* ctx, JSValue obj);
+	[CLink] public static extern c_int JS_PreventExtensions(JSContext* ctx, JSValue obj);
+	[CLink] public static extern c_int JS_DeleteProperty(JSContext* ctx, JSValue obj, JSAtom prop, c_int flags);
+	[CLink] public static extern c_int JS_SetPrototype(JSContext* ctx, JSValue obj, JSValue proto_val);
 	[CLink] public static extern JSValue JS_GetPrototype(JSContext* ctx, JSValue val);
-	[CLink] public static extern int JS_GetLength(JSContext* ctx, JSValue obj, int64_t* pres);
-	[CLink] public static extern int JS_SetLength(JSContext* ctx, JSValue obj, int64_t len);
-	[CLink] public static extern int JS_SealObject(JSContext* ctx, JSValue obj);
-	[CLink] public static extern int JS_FreezeObject(JSContext* ctx, JSValue obj);
+	[CLink] public static extern c_int JS_GetLength(JSContext* ctx, JSValue obj, int64_t* pres);
+	[CLink] public static extern c_int JS_SetLength(JSContext* ctx, JSValue obj, int64_t len);
+	[CLink] public static extern c_int JS_SealObject(JSContext* ctx, JSValue obj);
+	[CLink] public static extern c_int JS_FreezeObject(JSContext* ctx, JSValue obj);
 
-	const int JS_GPN_STRING_MASK  = (1 << 0);
-	const int JS_GPN_SYMBOL_MASK  = (1 << 1);
-	const int JS_GPN_PRIVATE_MASK = (1 << 2);
+	const c_int JS_GPN_STRING_MASK  = 1 << 0;
+	const c_int JS_GPN_SYMBOL_MASK  = 1 << 1;
+	const c_int JS_GPN_PRIVATE_MASK = 1 << 2;
 	/* only include the enumerable properties */
-	const int JS_GPN_ENUM_ONLY    = (1 << 4);
+	const c_int JS_GPN_ENUM_ONLY    = 1 << 4;
 	/* set theJSPropertyEnum.is_enumerable field */
-	const int JS_GPN_SET_ENUM     = (1 << 5);
+	const c_int JS_GPN_SET_ENUM     = 1 << 5;
 
-	[CLink] public static extern int JS_GetOwnPropertyNames(JSContext* ctx, JSPropertyEnum** ptab, uint32_t* plen, JSValue obj, int flags);
-	[CLink] public static extern int JS_GetOwnProperty(JSContext* ctx, JSPropertyDescriptor* desc, JSValue obj, JSAtom prop);
+	[CLink] public static extern c_int JS_GetOwnPropertyNames(JSContext* ctx, JSPropertyEnum** ptab, uint32_t* plen, JSValue obj, c_int flags);
+	[CLink] public static extern c_int JS_GetOwnProperty(JSContext* ctx, JSPropertyDescriptor* desc, JSValue obj, JSAtom prop);
 	[CLink] public static extern void JS_FreePropertyEnum(JSContext* ctx, JSPropertyEnum* tab, uint32_t len);
 
-	[CLink] public static extern JSValue JS_Call(JSContext* ctx, JSValue func_obj, JSValue this_obj, int argc, JSValue* argv);
-	[CLink] public static extern JSValue JS_Invoke(JSContext* ctx, JSValue this_val, JSAtom atom, int argc, JSValue* argv);
-	[CLink] public static extern JSValue JS_CallConstructor(JSContext* ctx, JSValue func_obj, int argc, JSValue* argv);
-	[CLink] public static extern JSValue JS_CallConstructor2(JSContext* ctx, JSValue func_obj, JSValue new_target, int argc, JSValue* argv);
+	[CLink] public static extern JSValue JS_Call(JSContext* ctx, JSValue func_obj, JSValue this_obj, c_int argc, JSValue* argv);
+	[CLink] public static extern JSValue JS_Invoke(JSContext* ctx, JSValue this_val, JSAtom atom, c_int argc, JSValue* argv);
+	[CLink] public static extern JSValue JS_CallConstructor(JSContext* ctx, JSValue func_obj, c_int argc, JSValue* argv);
+	[CLink] public static extern JSValue JS_CallConstructor2(JSContext* ctx, JSValue func_obj, JSValue new_target, c_int argc, JSValue* argv);
 	/* Try to detect if the input is a module. Returns true if parsing the input
 	*  as a module produces no syntax errors. It's a naive approach that is not
 	*  wholly infallible: non-strict classic scripts may _parse_ okay as a module
@@ -536,19 +543,19 @@ public static class quickjs
 	*/
 	[CLink] public static extern bool JS_DetectModule(char* input, size_t input_len);
 	/* 'input' must be zero terminated i.e. input[input_len] = '\0'. */
-	[CLink] public static extern JSValue JS_Eval(JSContext* ctx, char* input, size_t input_len, char* filename, int eval_flags);
+	[CLink] public static extern JSValue JS_Eval(JSContext* ctx, char* input, size_t input_len, char* filename, c_int eval_flags);
 	[CLink] public static extern JSValue JS_Eval2(JSContext* ctx, char* input, size_t input_len, JSEvalOptions* options);
-	[CLink] public static extern JSValue JS_EvalThis(JSContext* ctx, JSValue this_obj, char* input, size_t input_len, char* filename, int eval_flags);
+	[CLink] public static extern JSValue JS_EvalThis(JSContext* ctx, JSValue this_obj, char* input, size_t input_len, char* filename, c_int eval_flags);
 	[CLink] public static extern JSValue JS_EvalThis2(JSContext* ctx, JSValue this_obj, char* input, size_t input_len, JSEvalOptions* options);
 	[CLink] public static extern JSValue JS_GetGlobalObject(JSContext* ctx);
-	[CLink] public static extern int JS_IsInstanceOf(JSContext* ctx, JSValue val, JSValue obj);
-	[CLink] public static extern int JS_DefineProperty(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val, JSValue getter, JSValue setter, int flags);
-	[CLink] public static extern int JS_DefinePropertyValue(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val, int flags);
-	[CLink] public static extern int JS_DefinePropertyValueUint32(JSContext* ctx, JSValue this_obj, uint32_t idx, JSValue val, int flags);
-	[CLink] public static extern int JS_DefinePropertyValueStr(JSContext* ctx, JSValue this_obj, char* prop, JSValue val, int flags);
-	[CLink] public static extern int JS_DefinePropertyGetSet(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue getter, JSValue setter, int flags);
+	[CLink] public static extern c_int JS_IsInstanceOf(JSContext* ctx, JSValue val, JSValue obj);
+	[CLink] public static extern c_int JS_DefineProperty(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val, JSValue getter, JSValue setter, c_int flags);
+	[CLink] public static extern c_int JS_DefinePropertyValue(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue val, c_int flags);
+	[CLink] public static extern c_int JS_DefinePropertyValueUint32(JSContext* ctx, JSValue this_obj, uint32_t idx, JSValue val, c_int flags);
+	[CLink] public static extern c_int JS_DefinePropertyValueStr(JSContext* ctx, JSValue this_obj, char* prop, JSValue val, c_int flags);
+	[CLink] public static extern c_int JS_DefinePropertyGetSet(JSContext* ctx, JSValue this_obj, JSAtom prop, JSValue getter, JSValue setter, c_int flags);
 	/* Only supported for custom classes, returns 0 on success < 0 otherwise. */
-	[CLink] public static extern int JS_SetOpaque(JSValue obj, void* opaque);
+	[CLink] public static extern c_int JS_SetOpaque(JSValue obj, void* opaque);
 	[CLink] public static extern void* JS_GetOpaque(JSValue obj, JSClassID class_id);
 	[CLink] public static extern void* JS_GetOpaque2(JSContext* ctx, JSValue obj, JSClassID class_id);
 	[CLink] public static extern void* JS_GetAnyOpaque(JSValue obj, JSClassID* class_id);
@@ -566,7 +573,7 @@ public static class quickjs
 	[CLink] public static extern bool JS_IsArrayBuffer(JSValue obj);
 	[CLink] public static extern uint8_t* JS_GetUint8Array(JSContext* ctx, size_t* psize, JSValue obj);
 
-	enum JSTypedArrayEnum
+	public enum JSTypedArrayEnum : c_int
 	{
 		JS_TYPED_ARRAY_UINT8C = 0,
 		JS_TYPED_ARRAY_INT8,
@@ -582,11 +589,11 @@ public static class quickjs
 		JS_TYPED_ARRAY_FLOAT64,
 	}
 
-	[CLink] public static extern JSValue JS_NewTypedArray(JSContext* ctx, int argc, JSValue* argv, JSTypedArrayEnum array_type);
+	[CLink] public static extern JSValue JS_NewTypedArray(JSContext* ctx, c_int argc, JSValue* argv, JSTypedArrayEnum array_type);
 	[CLink] public static extern JSValue JS_GetTypedArrayBuffer(JSContext* ctx, JSValue obj, size_t* pbyte_offset, size_t* pbyte_length, size_t* pbytes_per_element);
 	[CLink] public static extern JSValue JS_NewUint8Array(JSContext* ctx, uint8_t* buf, size_t len, JSFreeArrayBufferDataFunc* free_func, void* opaque, bool is_shared);
 	/* returns -1 if not a typed array otherwise return a JSTypedArrayEnum value */
-	[CLink] public static extern int JS_GetTypedArrayType(JSValue obj);
+	[CLink] public static extern c_int JS_GetTypedArrayType(JSValue obj);
 	[CLink] public static extern JSValue JS_NewUint8ArrayCopy(JSContext* ctx, uint8_t* buf, size_t len);
 
 	[CRepr] struct JSSharedArrayBufferFunctions
@@ -599,7 +606,7 @@ public static class quickjs
 
 	[CLink] public static extern void JS_SetSharedArrayBufferFunctions(JSRuntime* rt, JSSharedArrayBufferFunctions* sf);
 
-	[CRepr] public enum JSPromiseStateEnum
+	[CRepr] public enum JSPromiseStateEnum : c_int
 	{
 		JS_PROMISE_PENDING,
 		JS_PROMISE_FULFILLED,
@@ -619,7 +626,7 @@ public static class quickjs
 	[CLink] public static extern void JS_SetHostPromiseRejectionTracker(JSRuntime* rt, JSHostPromiseRejectionTracker* cb, void* opaque);
 
 	/* return != 0 if the JS code needs to be interrupted */
-	public function int JSInterruptHandler(JSRuntime* rt, void* opaque);
+	public function c_int JSInterruptHandler(JSRuntime* rt, void* opaque);
 
 	[CLink] public static extern void JS_SetInterruptHandler(JSRuntime* rt, JSInterruptHandler* cb, void* opaque);
 	/* if can_block is true, Atomics.wait() can be used */
@@ -644,11 +651,11 @@ public static class quickjs
 
 	/* JS Job support */
 
-	public function JSValue JSJobFunc(JSContext* ctx, int argc, JSValue* argv);
-	[CLink] public static extern int JS_EnqueueJob(JSContext* ctx, JSJobFunc* job_func, int argc, JSValue* argv);
+	public function JSValue JSJobFunc(JSContext* ctx, c_int argc, JSValue* argv);
+	[CLink] public static extern c_int JS_EnqueueJob(JSContext* ctx, JSJobFunc* job_func, c_int argc, JSValue* argv);
 
 	[CLink] public static extern bool JS_IsJobPending(JSRuntime* rt);
-	[CLink] public static extern int JS_ExecutePendingJob(JSRuntime* rt, JSContext** pctx);
+	[CLink] public static extern c_int JS_ExecutePendingJob(JSRuntime* rt, JSContext** pctx);
 
 	/* Structure to retrieve (de)serialized SharedArrayBuffer objects. */
 	struct JSSABTab
@@ -658,37 +665,37 @@ public static class quickjs
 	}
 
 	/* Object Writer/Reader (currently only used to handle precompiled code) */
-	const int JS_WRITE_OBJ_BYTECODE  = (1 << 0); /* allow function/module */
-	const int JS_WRITE_OBJ_BSWAP     = (0); /* byte swapped output (obsolete, handled transparently); */
-	const int JS_WRITE_OBJ_SAB       = (1 << 2); /* allow SharedArrayBuffer */
-	const int JS_WRITE_OBJ_REFERENCE = (1 << 3); /* allow object references to encode arbitrary object graph */
-	const int JS_WRITE_OBJ_STRIP_SOURCE  = (1 << 4); /* do not write source code information */
-	const int JS_WRITE_OBJ_STRIP_DEBUG   = (1 << 5); /* do not write debug information */
+	const c_int JS_WRITE_OBJ_BYTECODE  = 1 << 0; /* allow function/module */
+	const c_int JS_WRITE_OBJ_BSWAP     = 0; /* byte swapped output (obsolete, handled transparently); */
+	const c_int JS_WRITE_OBJ_SAB       = 1 << 2; /* allow SharedArrayBuffer */
+	const c_int JS_WRITE_OBJ_REFERENCE = 1 << 3; /* allow object references to encode arbitrary object graph */
+	const c_int JS_WRITE_OBJ_STRIP_SOURCE  = 1 << 4; /* do not write source code information */
+	const c_int JS_WRITE_OBJ_STRIP_DEBUG   = 1 << 5; /* do not write debug information */
 
-	[CLink] public static extern uint8_t* JS_WriteObject(JSContext* ctx, size_t* psize, JSValue obj, int flags);
-	[CLink] public static extern uint8_t* JS_WriteObject2(JSContext* ctx, size_t* psize, JSValue obj, int flags, JSSABTab* psab_tab);
+	[CLink] public static extern uint8_t* JS_WriteObject(JSContext* ctx, size_t* psize, JSValue obj, c_int flags);
+	[CLink] public static extern uint8_t* JS_WriteObject2(JSContext* ctx, size_t* psize, JSValue obj, c_int flags, JSSABTab* psab_tab);
 
-	const int JS_READ_OBJ_BYTECODE  = (1 << 0); /* allow function/module */
-	const int JS_READ_OBJ_ROM_DATA  = (0); /* avoid duplicating 'buf' data (obsolete, broken by ICs) */
-	const int JS_READ_OBJ_SAB       = (1 << 2); /* allow SharedArrayBuffer */
-	const int JS_READ_OBJ_REFERENCE = (1 << 3); /* allow object references */
+	const c_int JS_READ_OBJ_BYTECODE  = 1 << 0; /* allow function/module */
+	const c_int JS_READ_OBJ_ROM_DATA  = 0; /* avoid duplicating 'buf' data (obsolete, broken by ICs) */
+	const c_int JS_READ_OBJ_SAB       = 1 << 2; /* allow SharedArrayBuffer */
+	const c_int JS_READ_OBJ_REFERENCE = 1 << 3; /* allow object references */
 
-	[CLink] public static extern JSValue JS_ReadObject(JSContext* ctx, uint8_t* buf, size_t buf_len, int flags);
-	[CLink] public static extern JSValue JS_ReadObject2(JSContext* ctx, uint8_t* buf, size_t buf_len, int flags, JSSABTab* psab_tab);
+	[CLink] public static extern JSValue JS_ReadObject(JSContext* ctx, uint8_t* buf, size_t buf_len, c_int flags);
+	[CLink] public static extern JSValue JS_ReadObject2(JSContext* ctx, uint8_t* buf, size_t buf_len, c_int flags, JSSABTab* psab_tab);
 	/* instantiate and evaluate a bytecode function. Only used when
 	reading a script or module with JS_ReadObject() */
 	[CLink] public static extern JSValue JS_EvalFunction(JSContext* ctx, JSValue fun_obj);
 	/* load the dependencies of the module 'obj'. Useful when JS_ReadObject()
 	returns a module. */
-	[CLink] public static extern int JS_ResolveModule(JSContext* ctx, JSValue obj);
+	[CLink] public static extern c_int JS_ResolveModule(JSContext* ctx, JSValue obj);
 
 	/* only exported for os.Worker() */
-	[CLink] public static extern JSAtom JS_GetScriptOrModuleName(JSContext* ctx, int n_stack_levels);
+	[CLink] public static extern JSAtom JS_GetScriptOrModuleName(JSContext* ctx, c_int n_stack_levels);
 	/* only exported for os.Worker() */
 	[CLink] public static extern JSValue JS_LoadModule(JSContext* ctx, char* basename, char* filename);
 
 	/* C function definition */
-	enum JSCFunctionEnum
+	public enum JSCFunctionEnum : c_int
 	{ /* XXX: should rename for namespace isolation */
 		JS_CFUNC_generic,
 		JS_CFUNC_generic_magic,
@@ -708,24 +715,24 @@ public static class quickjs
 	[Union] struct JSCFunctionType
 	{
 		JSCFunction* generic;
-		function JSValue(JSContext* ctx, JSValue this_val, int argc, JSValue* argv, int magic) generic_magic;
+		function JSValue(JSContext* ctx, JSValue this_val, c_int argc, JSValue* argv, c_int magic) generic_magic;
 		JSCFunction* constructor;
-		function JSValue(JSContext* ctx, JSValue new_target, int argc, JSValue* argv, int magic) constructor_magic;
+		function JSValue(JSContext* ctx, JSValue new_target, c_int argc, JSValue* argv, c_int magic) constructor_magic;
 		JSCFunction* constructor_or_func;
 		function double(double) f_f;
 		function double(double, double) f_f_f;
 		function JSValue(JSContext* ctx, JSValue this_val) getter;
 		function JSValue(JSContext* ctx, JSValue this_val, JSValue val) setter;
-		function JSValue(JSContext* ctx, JSValue this_val, int magic) getter_magic;
-		function JSValue(JSContext* ctx, JSValue this_val, JSValue val, int magic) setter_magic;
-		function JSValue(JSContext* ctx, JSValue this_val, int argc, JSValue* argv, int* pdone, int magic) iterator_next;
+		function JSValue(JSContext* ctx, JSValue this_val, c_int magic) getter_magic;
+		function JSValue(JSContext* ctx, JSValue this_val, JSValue val, c_int magic) setter_magic;
+		function JSValue(JSContext* ctx, JSValue this_val, c_int argc, JSValue* argv, c_int* pdone, c_int magic) iterator_next;
 	}
 
-	[CLink] public static extern JSValue JS_NewCFunction2(JSContext* ctx, JSCFunction func, char* name, int length, JSCFunctionEnum cproto, int magic);
-	[CLink] public static extern JSValue JS_NewCFunction3(JSContext* ctx, JSCFunction func, char* name, int length, JSCFunctionEnum cproto, int magic, JSValue proto_val);
-	[CLink] public static extern JSValue JS_NewCFunctionData(JSContext* ctx, JSCFunctionData func, int length, int magic, int data_len, JSValue* data);
+	[CLink] public static extern JSValue JS_NewCFunction2(JSContext* ctx, JSCFunction func, char* name, c_int length, JSCFunctionEnum cproto, c_int magic);
+	[CLink] public static extern JSValue JS_NewCFunction3(JSContext* ctx, JSCFunction func, char* name, c_int length, JSCFunctionEnum cproto, c_int magic, JSValue proto_val);
+	[CLink] public static extern JSValue JS_NewCFunctionData(JSContext* ctx, JSCFunctionData func, c_int length, c_int magic, c_int data_len, JSValue* data);
 
-	[Inline] public static JSValue JS_NewCFunction(JSContext* ctx, JSCFunction func, char* name, int length)
+	[Inline] public static JSValue JS_NewCFunction(JSContext* ctx, JSCFunction func, char* name, c_int length)
 	{
 		return JS_NewCFunction2(ctx, func, name, length, .JS_CFUNC_generic, 0);
 	}
@@ -757,12 +764,12 @@ public static class quickjs
 			struct
 			{
 				char* name;
-				int base_;
+				c_int base_;
 			} alias;
 			struct
 			{
 				JSCFunctionListEntry* tab;
-				int len;
+				c_int len;
 			} prop_list;
 			char* str; /* pure ASCII or UTF-8 encoded */
 			int32_t i32;
@@ -772,16 +779,16 @@ public static class quickjs
 		} u;
 	}
 
-	const int JS_DEF_CFUNC          = 0;
-	const int JS_DEF_CGETSET        = 1;
-	const int JS_DEF_CGETSET_MAGIC  = 2;
-	const int JS_DEF_PROP_STRING    = 3;
-	const int JS_DEF_PROP_INT32     = 4;
-	const int JS_DEF_PROP_INT64     = 5;
-	const int JS_DEF_PROP_DOUBLE    = 6;
-	const int JS_DEF_PROP_UNDEFINED = 7;
-	const int JS_DEF_OBJECT         = 8;
-	const int JS_DEF_ALIAS          = 9;
+	const c_int JS_DEF_CFUNC          = 0;
+	const c_int JS_DEF_CGETSET        = 1;
+	const c_int JS_DEF_CGETSET_MAGIC  = 2;
+	const c_int JS_DEF_PROP_STRING    = 3;
+	const c_int JS_DEF_PROP_INT32     = 4;
+	const c_int JS_DEF_PROP_INT64     = 5;
+	const c_int JS_DEF_PROP_DOUBLE    = 6;
+	const c_int JS_DEF_PROP_UNDEFINED = 7;
+	const c_int JS_DEF_OBJECT         = 8;
+	const c_int JS_DEF_ALIAS          = 9;
 
 	/* Note: c++ does not like nested designators */
 	// #define JS_CFUNC_DEF(name, length, func1) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, JS_DEF_CFUNC, 0, { .func = { length, JS_CFUNC_generic, { .generic = func1 } } } }
@@ -802,29 +809,29 @@ public static class quickjs
 	// #define JS_ALIAS_DEF(name, from) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, JS_DEF_ALIAS, 0, { .alias = { from, -1 } } }
 	// #define JS_ALIAS_BASE_DEF(name, from, base) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, JS_DEF_ALIAS, 0, { .alias = { from, base } } }
 
-	[CLink] public static extern void JS_SetPropertyFunctionList(JSContext* ctx, JSValue obj, JSCFunctionListEntry* tab, int len);
+	[CLink] public static extern void JS_SetPropertyFunctionList(JSContext* ctx, JSValue obj, JSCFunctionListEntry* tab, c_int len);
 
-	public function int JSModuleInitFunc(JSContext* ctx, JSModuleDef* m);
+	public function c_int JSModuleInitFunc(JSContext* ctx, JSModuleDef* m);
 
 	[CLink] public static extern JSModuleDef* JS_NewCModule(JSContext* ctx, char* name_str, JSModuleInitFunc* func);
 
 	/* can only be called before the module is instantiated */
-	[CLink] public static extern int JS_AddModuleExport(JSContext* ctx, JSModuleDef* m, char* name_str);
-	[CLink] public static extern int JS_AddModuleExportList(JSContext* ctx, JSModuleDef* m, JSCFunctionListEntry* tab, int len);
+	[CLink] public static extern c_int JS_AddModuleExport(JSContext* ctx, JSModuleDef* m, char* name_str);
+	[CLink] public static extern c_int JS_AddModuleExportList(JSContext* ctx, JSModuleDef* m, JSCFunctionListEntry* tab, c_int len);
 
 	/* can only be called after the module is instantiated */
-	[CLink] public static extern int JS_SetModuleExport(JSContext* ctx, JSModuleDef* m, char* export_name, JSValue val);
-	[CLink] public static extern int JS_SetModuleExportList(JSContext* ctx, JSModuleDef* m, JSCFunctionListEntry* tab, int len);
+	[CLink] public static extern c_int JS_SetModuleExport(JSContext* ctx, JSModuleDef* m, char* export_name, JSValue val);
+	[CLink] public static extern c_int JS_SetModuleExportList(JSContext* ctx, JSModuleDef* m, JSCFunctionListEntry* tab, c_int len);
 
 	/* Version */
 
-	const int QJS_VERSION_MAJOR = 0;
-	const int QJS_VERSION_MINOR = 8;
-	const int QJS_VERSION_PATCH = 0;
+	const c_int QJS_VERSION_MAJOR = 0;
+	const c_int QJS_VERSION_MINOR = 8;
+	const c_int QJS_VERSION_PATCH = 0;
 	const char8* QJS_VERSION_SUFFIX = "";
 
 	[CLink] public static extern char* JS_GetVersion();
 
 	/* Integration point for quickjs-libc.c, not for public use. */
-	[CLink] public static extern uintptr_t js_std_cmd(int cmd, ...);
+	[CLink] public static extern uintptr_t js_std_cmd(c_int cmd, ...);
 }
